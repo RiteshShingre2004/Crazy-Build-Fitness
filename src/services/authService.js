@@ -25,6 +25,29 @@ function toFriendlyError(err, fallback) {
 }
 
 /**
+ * Safely parse a fetch Response as JSON.
+ * If the body is empty or not valid JSON, returns a fallback object
+ * so callers never see "Unexpected end of JSON input".
+ * @param {Response} res
+ * @param {string}   fallbackError  — message to use when body is unreadable
+ * @returns {Promise<object>}
+ */
+async function safeJson(res, fallbackError = 'Unexpected server response.') {
+  const text = await res.text();
+  if (!text || !text.trim()) {
+    // Empty body — return a synthetic error object
+    return { error: fallbackError };
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Body exists but is not valid JSON (e.g. an HTML error page)
+    console.error('[authService] Non-JSON response body:', text.slice(0, 200));
+    return { error: fallbackError };
+  }
+}
+
+/**
  * Request a 6-digit OTP to be sent to `email`.
  * @param {string} email
  * @returns {Promise<{ message: string }>}
@@ -42,7 +65,7 @@ export async function sendOTP(email) {
     throw toFriendlyError(networkErr, 'Failed to send verification code.');
   }
 
-  const data = await res.json();
+  const data = await safeJson(res, 'Failed to send verification code.');
 
   if (!res.ok) {
     const err = new Error(data.error || 'Failed to send verification code.');
@@ -72,7 +95,7 @@ export async function verifyOTP(email, otp) {
     throw toFriendlyError(networkErr, 'Verification failed. Please try again.');
   }
 
-  const data = await res.json();
+  const data = await safeJson(res, 'Verification failed. Please try again.');
 
   if (!res.ok) {
     throw new Error(data.error || 'Verification failed. Please try again.');

@@ -46,7 +46,7 @@ function SuccessMsg({ msg }) {
   );
 }
 
-// ── Server offline banner ─────────────────────────────────────────────────────
+// ── Server offline banner (DEV only) ─────────────────────────────────────────
 function OfflineBanner() {
   return (
     <motion.div
@@ -79,16 +79,17 @@ export default function AuthPage() {
   const [countdown, setCountdown]     = useState(0);
   const [isRestoring, setIsRestoring] = useState(false);
 
-  // null = unknown, true = online, false = offline
+  // null = unknown, true = online, false = offline (dev only)
   const [serverOnline, setServerOnline] = useState(null);
+  const isDev = import.meta.env.DEV;
 
   const otpRefs  = useRef([]);
   const timerRef = useRef(null);
 
-  // ── Ping backend on mount ────────────────────────────────────────────────────
+  // ── Ping backend on mount (dev only — users never see infra status) ──────────
   useEffect(() => {
-    pingServer().then(setServerOnline);
-  }, []);
+    if (isDev) pingServer().then(setServerOnline);
+  }, [isDev]);
 
   // ── Countdown ticker ─────────────────────────────────────────────────────────
   useEffect(() => {
