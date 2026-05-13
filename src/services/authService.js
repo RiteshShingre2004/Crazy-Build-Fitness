@@ -1,7 +1,7 @@
 // ── Crazy Build · authService.js ─────────────────────────────────────────────
 // Handles all communication with the Express OTP backend.
 
-const API_BASE = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_AUTH_API_URL || 'https://crazy-build-fitness-production.up.railway.app';
 
 /**
  * Wraps a raw network error (TypeError: Failed to fetch) into a
@@ -57,9 +57,9 @@ export async function sendOTP(email) {
   let res;
   try {
     res = await fetch(`${API_BASE}/auth/send-otp`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email: email.trim().toLowerCase() }),
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
     });
   } catch (networkErr) {
     throw toFriendlyError(networkErr, 'Failed to send verification code.');
@@ -87,9 +87,9 @@ export async function verifyOTP(email, otp) {
   let res;
   try {
     res = await fetch(`${API_BASE}/auth/verify-otp`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email: email.trim().toLowerCase(), otp }),
+      body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
     });
   } catch (networkErr) {
     throw toFriendlyError(networkErr, 'Verification failed. Please try again.');
